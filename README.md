@@ -1,8 +1,8 @@
 # terminal
 Запуск программы:
-##Компиляция:
+#Компиляция:\
 g++ -o terminal main.cpp Terminal.cpp Entry.cpp Directory.cpp SingleLineFile.cpp MultiLineFile.cpp
-##Запуск файла:
+#Запуск файла:
 в Linux/macOS: ./terminal;
 в Windows: terminal.exe.
 
@@ -13,7 +13,7 @@ terminal>
 Вводите команды и нажимайте Enter для их выполнения.
 
 Поддерживаемые команды:
-help -	Показать список доступных команд	
+help -	Показать список доступных команд	\
 exit	- Завершить работу программы	
 ls	- Показать содержимое текущей директории
 cd <dir> -	Перейти в директорию <dir>; cd .. — подняться на уровень выше	
