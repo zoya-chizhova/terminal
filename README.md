@@ -1,5 +1,5 @@
 # terminal
-Запуск программы:
+Запуск программы:\
 #Компиляция:\
 g++ -o terminal main.cpp Terminal.cpp Entry.cpp Directory.cpp SingleLineFile.cpp MultiLineFile.cpp
 #Запуск файла:
