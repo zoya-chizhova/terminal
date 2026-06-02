@@ -1,22 +1,20 @@
-#include "Directory.cpp"
-#include "SingleLineFile.cpp"
-#include "MultiLineFile.cpp"
+#include "Terminal.h"
+#include "Directory.h"
+#include "SingleLineFile.h"
+#include "MultiLineFile.h"
+#include "Entry.h"
+
 #include <sstream>
 #include <iostream>
 #include <memory>
 
-class Terminal {
-private:
-    std::unique_ptr<Directory> root;
-    Directory* currentDir;
-    std::vector<std::unique_ptr<Entry>> hiddenEntries;
-
-#Terminal() {
+Terminal::Terminal() {
     root = std::make_unique<Directory>("root");
     currentDir = root.get();
 }
 
-#void run() {
+// Запуск терминала
+void Terminal::run() {
     std::cout << "Virtual Terminal started. Type 'help' for commands.\n";
     std::string input;
 
@@ -27,12 +25,13 @@ private:
     }
 }
 
-std::string getPrompt() const {
-    // Упрощённая реализация пути
+// Формирование приглашения
+std::string Terminal::getPrompt() const {
     return "terminal";
 }
 
-void processCommand(const std::string& command) {
+// Обработка команд
+void Terminal::processCommand(const std::string& command) {
     std::istringstream iss(command);
     std::string cmd;
     iss >> cmd;
@@ -65,7 +64,7 @@ void processCommand(const std::string& command) {
     }
 }
 
-void showHelp() {
+void Terminal::showHelp() {
     std::cout
         << "Available commands:\n"
         << "  help     - Show this help\n"
@@ -81,7 +80,7 @@ void showHelp() {
         << "  edit <file> <content> - Edit file\n";
 }
 
-void handleCd(std::istringstream& iss) {
+void Terminal::handleCd(std::istringstream& iss) {
     std::string dirName;
     iss >> dirName;
 
@@ -92,7 +91,7 @@ void handleCd(std::istringstream& iss) {
 
     Entry* entry = currentDir->findChild(dirName);
     if (entry) {
-        Directory* dir = entry->asDirectory();
+        Directory* dir = dynamic_cast<Directory*>(entry);
         if (dir) {
             currentDir = dir;
         } else {
@@ -103,7 +102,7 @@ void handleCd(std::istringstream& iss) {
     }
 }
 
-void handleCat(std::istringstream& iss) {
+void Terminal::handleCat(std::istringstream& iss) {
     std::string fileName;
     iss >> fileName;
 
@@ -115,7 +114,7 @@ void handleCat(std::istringstream& iss) {
     }
 }
 
-void handleTouch(std::istringstream& iss) {
+void Terminal::handleTouch(std::istringstream& iss) {
     std::string fileName;
     iss >> fileName;
 
@@ -126,11 +125,111 @@ void handleTouch(std::istringstream& iss) {
     }
 }
 
-void handleMkdir(std::istringstream& iss) {
+void Terminal::handleMkdir(std::istringstream& iss) {
     std::string dirName;
     iss >> dirName;
 
     if (!dirName.empty()) {
         auto newDir = std::make_unique<Directory>(dirName);
         currentDir->addChild(std::move(newDir));
-        std::
+        std::cout << "Directory created: " << dirName << "\n";
+    } else {
+        std::cout << "Usage: mkdir <directory_name>\n";
+    }
+}
+void Terminal::handleRm(std::istringstream& iss) {
+    std::string entryName;
+    iss >> entryName;
+
+    if (entryName.empty()) {
+        std::cout << "Usage: rm <entry_name>\n";
+        return;
+    }
+
+    Entry* entry = currentDir->findChild(entryName);
+    if (entry) {
+        entry->setHidden(true);
+        // Перемещаем в список скрытых записей
+        auto it = std::find_if(currentDir->getChildren().begin(),
+                           currentDir->getChildren().end(),
+                           [&entryName](const auto& child) {
+                               return child->getDisplayName() == entryName;
+                           });
+        if (it != currentDir->getChildren().end()) {
+            hiddenEntries.push_back(std::move(const_cast<std::unique_ptr<Entry>&>(*it)));
+            currentDir->removeChild(entryName);
+            std::cout << "Entry hidden: " << entryName << "\n";
+        }
+    } else {
+        std::cout << "Entry not found: " << entryName << "\n";
+    }
+}
+
+void Terminal::handleRestore(std::istringstream& iss) {
+    std::string entryName;
+    iss >> entryName;
+
+    if (entryName.empty()) {
+        std::cout << "Usage: restore <entry_name>\n";
+        return;
+    }
+
+    // Ищем в списке скрытых записей
+    auto it = std::find_if(hiddenEntries.begin(), hiddenEntries.end(),
+               [&entryName](const auto& hiddenEntry) {
+                   return hiddenEntry->getDisplayName() == entryName;
+               });
+
+    if (it != hiddenEntries.end()) {
+        (*it)->setHidden(false);
+        currentDir->addChild(std::move(*it));
+        hiddenEntries.erase(it);
+        std::cout << "Entry restored: " << entryName << "\n";
+    } else {
+        std::cout << "Hidden entry not found: " << entryName << "\n";
+    }
+}
+
+void Terminal::handleMv(std::istringstream& iss) {
+    std::string oldName, newName;
+    iss >> oldName >> newName;
+
+    if (oldName.empty() || newName.empty()) {
+        std::cout << "Usage: mv <old_name> <new_name>\n";
+        return;
+    }
+
+    Entry* entry = currentDir->findChild(oldName);
+    if (entry) {
+        entry->setName(newName);
+        std::cout << "Entry renamed: " << oldName << " -> " << newName << "\n";
+    } else {
+        std::cout << "Entry not found: " << oldName << "\n";
+    }
+}
+
+void Terminal::handleEdit(std::istringstream& iss) {
+    std::string fileName, content;
+    iss >> fileName;
+    std::getline(iss >> std::ws, content); // читаем остаток строки как контент
+
+    if (fileName.empty() || content.empty()) {
+        std::cout << "Usage: edit <file_name> <content>\n";
+        return;
+    }
+
+    Entry* entry = currentDir->findChild(fileName);
+    if (entry && !entry->isHidden()) {
+        if (auto* file = dynamic_cast<SingleLineFile*>(entry)) {
+            file->setContent(content);
+            std::cout << "File edited: " << fileName << "\n";
+        } else if (auto* multiFile = dynamic_cast<MultiLineFile*>(entry)) {
+            multiFile->setContent(content);
+            std::cout << "File edited: " << fileName << "\n";
+        } else {
+            std::cout << "Cannot edit this type of entry\n";
+        }
+    } else {
+        std::cout << "File not found or hidden: " << fileName << "\n";
+    }
+}

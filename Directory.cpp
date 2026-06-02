@@ -1,19 +1,14 @@
-#include "Entry.cpp"
-#include <vector>
-#include <memory>
+#include "Entry.h"
+#include "Directory.h"
 #include <algorithm>
 
-class Directory : public Entry {
-private:
-    std::vector<std::unique_ptr<Entry>> children;
+Directory::Directory(const std::string& n) : Entry(n) {}
 
-publicDirectory(const std::string& n) : Entry(n) {}
-
-# Entry* asDirectory() override {
+Entry* Directory::asDirectory() {
     return this;
 }
 
-# void displayContent() const override {
+void Directory::displayContent() const {
     for (const auto& child : children) {
         if (!child->isHidden()) {
             std::cout << child->getDisplayName() << "\n";
@@ -21,12 +16,12 @@ publicDirectory(const std::string& n) : Entry(n) {}
     }
 }
 
-# bool edit(const std::string&) override {
+bool Directory::edit(const std::string&) {
     std::cout << "Cannot edit directory\n";
     return false;
 }
 
-Entry* findChild(const std::string& name) {
+Entry* Directory::findChild(const std::string& name) {
     auto it = std::find_if(children.begin(), children.end(),
         [&name](const std::unique_ptr<Entry>& e) {
             return e->getDisplayName() == name;
@@ -34,7 +29,22 @@ Entry* findChild(const std::string& name) {
     return (it != children.end()) ? it->get() : nullptr;
 }
 
-void addChild(std::unique_ptr<Entry> child) {
+void Directory::addChild(std::unique_ptr<Entry> child) {
     children.push_back(std::move(child));
 }
-};
+
+const std::vector<std::unique_ptr<Entry>>& Directory::getChildren() const {
+    return children;
+}
+void Directory::removeChild(const std::string& entryName) {
+    auto it = std::find_if(children.begin(), children.end(),
+        [&entryName](const std::unique_ptr<Entry>& e) {
+            return e->getDisplayName() == entryName;
+        });
+
+    if (it != children.end()) {
+        children.erase(it);
+    } else {
+        std::cout << "Entry not found: " << entryName << "\n";
+    }
+}

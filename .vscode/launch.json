@@ -1,0 +1,13 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "C/C++ Runner: Debug Session",
+      "type": "lldb",
+      "request": "launch",
+      "args": [],
+      "cwd": "/Users/zoya.chizhova/terminal/terminal",
+      "program": "/Users/zoya.chizhova/terminal/terminal/build/Debug/outDebug"
+    }
+  ]
+}

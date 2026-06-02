@@ -1,18 +1,18 @@
-#include "Entry.cpp"
+#include "Entry.h"
 
-class SingleLineFile : public Entry {
-private:
-    std::string content;
+#include "SingleLineFile.h"
 
-#SingleLineFile(const std::string& n, const std::string& c = "")
+SingleLineFile::SingleLineFile(const std::string& n, const std::string& c)
     : Entry(n), content(c) {}
 
-# void displayContent() const override {
+void SingleLineFile::displayContent() const {
     std::cout << content << "\n";
 }
 
-# bool edit(const std::string& newContent) override {
+bool SingleLineFile::edit(const std::string& newContent) {
     content = newContent;
     return true;
 }
-};
+void SingleLineFile::setContent(const std::string& newContent) {
+    content = newContent;
+}

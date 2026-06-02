@@ -1,20 +1,26 @@
-#include "Entry.cpp"
+#include "Entry.h"
 
-class MultiLineFile : public Entry {
-private:
-    std::vector<std::string> lines;
+#include "MultiLineFile.h"
+#include <sstream>
 
-#MultiLineFile(const std::string& n) : Entry(n) {}
+MultiLineFile::MultiLineFile(const std::string& n) : Entry(n) {}
 
-# void displayContent() const override {
+void MultiLineFile::displayContent() const {
     for (const auto& line : lines) {
         std::cout << line << "\n";
     }
 }
 
-# bool edit(const std::string& newContent) override {
+bool MultiLineFile::edit(const std::string& newContent) {
     lines.clear();
-    lines.push_back(newContent);
+    std::istringstream stream(newContent);
+    std::string line;
+    while (std::getline(stream, line)) {
+        lines.push_back(line);
+    }
     return true;
 }
-};
+
+void MultiLineFile::setContent(const std::string& newContent) {
+    edit(newContent); 
+}

@@ -1,29 +1,25 @@
-#include <string>
+#include "Entry.h"
+#include "Directory.h" 
 #include <iostream>
 
-class Entry {
-protected:
-    std::string name;
-    bool hidden;
+Entry::Entry(const std::string& n) : name(n), hidden(false) {}
 
-publicEntry(const std::string& n) : name(n), hidden(false) {}
-
-public virtual ~Entry() = default;
-
-public std::string getDisplayName() const {
+std::string Entry::getDisplayName() const {
     return name;
 }
 
-public bool isHidden() const {
+bool Entry::isHidden() const {
     return hidden;
 }
 
-public void setHidden(bool h) {
+void Entry::setHidden(bool h) {
     hidden = h;
 }
 
-// Полиморфные методы
-public virtual void displayContent() const = 0;
-# virtual Entry* asDirectory() { return nullptr; }
-# virtual bool edit(const std::string& content) = 0;
-};
+void Entry::setName(const std::string& newName) {
+    name = newName;
+}
+
+Entry* Entry::asDirectory() {
+    return nullptr;
+}
