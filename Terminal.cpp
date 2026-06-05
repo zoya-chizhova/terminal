@@ -6,6 +6,7 @@
 #include <sstream>
 #include <iostream>
 #include <memory>
+#include <algorithm>
 Terminal::Terminal() {
    root = std::make_unique<Directory>("root");
    currentDir = root.get();
