@@ -5,9 +5,9 @@
 #include <memory>
 #include <string>
 class Directory : public Entry {
-  private:
+private:
   std::vector<std::unique_ptr<Entry>> children;
-  public:
+public:
   Directory(const std::string& n);
   Entry* asDirectory() override;
   void displayContent() const override;
